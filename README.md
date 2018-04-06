@@ -23,7 +23,7 @@ git cms-merge-topic -u nsmith-:EgammaFromMultiCl_932v2
 mkdir -p RecoEgamma && pushd RecoEgamma
 git clone -b integrated https://github.com/nsmith-/Phase2InterimID.git
 popd
-git clone https://github.com/jkiesele/PhaseTwoAnalysis.git
+git clone https://github.com/l-cadamuro/PhaseTwoAnalysis.git
 scram b -j 8
 ```
 
