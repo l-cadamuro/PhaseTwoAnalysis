@@ -1,9 +1,10 @@
 #!/bin/bash
 PPOLDDIR=`pwd`
+DELPHES_TAG=3.4.2pre13
 
 echo $PPOLDDIR
-wget https://github.com/delphes/delphes/archive/3.4.2pre07.tar.gz
-tar xfz 3.4.2pre07.tar.gz
+wget https://github.com/delphes/delphes/archive/${DELPHES_TAG}.tar.gz
+tar xfz ${DELPHES_TAG}.tar.gz
 mv delphes-* delphes
 cd delphes
 pwd
