@@ -295,7 +295,7 @@ MiniFromPatnoEGamma::genAnalysis(const edm::Event& iEvent, const edm::EventSetup
 	if (ev_.ngj>=MiniEvent_t::maxjets) break;
     // if (genJets->at(i).pt() < 20.) continue;
     // if (fabs(genJets->at(i).eta()) > 5) continue;
-    if (genJets->at(i).pt() < 5.) continue; // 6 apr 2018 : lowered pT cut to 5 GeV
+    if (genJets->at(i).pt() < 15.) continue; // 6 apr 2018 : lowered pT cut to 15 GeV
     if (fabs(genJets->at(i).eta()) > 5.5) continue; // 6 apr 2018 : increase acceptance to 5.5
 
     bool overlaps = false;
