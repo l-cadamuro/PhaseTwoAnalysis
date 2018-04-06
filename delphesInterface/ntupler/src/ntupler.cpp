@@ -135,6 +135,16 @@ void ntupler::analyze(size_t childid /* this info can be used for printouts */){
                   selectedtaujets.push_back(taujet.at(i));
             }
 
+
+        // --> this crashes badly
+        
+        std::vector <Jet*> selectedGenJets;
+        for(size_t i=0;i<genjet.size();i++){
+            selectedGenJets.push_back(genjet.at(i));
+        }
+        
+
+
             
 		ev_.event = event.at(0)->Number;
 		ev_.g_nw = 1;
@@ -165,9 +175,11 @@ void ntupler::analyze(size_t childid /* this info can be used for printouts */){
 
             }
 
-            std::cout<<std::endl;
-
-		ev_.ntp=0;
+            //std::cout<< "STRONZO" << std::endl;
+            if (eventno % 10000 == 0)
+                std::cout << "DOING EVENT " << eventno << " / " << nevents << std::endl;
+		
+        ev_.ntp=0;
 		for(size_t i=0;i<selectedphotons.size();i++){
 			if(ev_.ntp>=MiniEvent_t::maxpart)break;
 			ev_.tp_eta[ev_.ntp]=selectedphotons.at(i)->Eta;
@@ -260,6 +272,52 @@ void ntupler::analyze(size_t childid /* this info can be used for printouts */){
 			ev_.nmet++;
 		}
 
+        
+        // Gen jets
+        // std::vector<size_t> jGenJets;
+        ev_.ngj = 0;
+        for (size_t i = 0; i < selectedGenJets.size(); i++) {
+            if (ev_.ngj>=MiniEvent_t::maxjets) break;
+            if (selectedGenJets.at(i)->PT < 20.) continue;
+            if (fabs(selectedGenJets.at(i)->Eta) > 5) continue;
+
+            TLorentzVector p4_gj;
+            p4_gj.SetPtEtaPhiM(
+                selectedGenJets.at(i)->PT,
+                selectedGenJets.at(i)->Eta,
+                selectedGenJets.at(i)->Phi,
+                selectedGenJets.at(i)->Mass
+            );
+
+
+            bool overlaps = false;
+            for (size_t j = 0; j < genpart.size(); j++) {
+                if (abs(genpart.at(j)->PID) != 11 && abs(genpart.at(j)->PID) != 13) continue;
+
+                TLorentzVector p4_gp;
+                p4_gp.SetPtEtaPhiM (
+                    genpart.at(j)->PT,
+                    genpart.at(j)->Eta,
+                    genpart.at(j)->Phi,
+                    genpart.at(j)->Mass
+                );
+
+                // if (fabs(selectedGenJets.at(i)->PT-genpart.at(j)->PT) < 0.01*genpart.at(j)->PT && ROOT::Math::VectorUtil::DeltaR(genpart.at(j).p4(),selectedGenJets.at(i).p4()) < 0.01) {
+                if (fabs(p4_gj.Pt()-p4_gp.Pt()) < 0.01*p4_gp.Pt() && p4_gj.DeltaR(p4_gp) < 0.01) { 
+                    overlaps = true;
+                    break;
+                }
+            }
+            if (overlaps) continue;
+            // jselectedGenJets.push_back(i);
+
+            ev_.gj_pt[ev_.ngj]   = selectedGenJets.at(i)->PT;
+            ev_.gj_phi[ev_.ngj]  = selectedGenJets.at(i)->Phi;
+            ev_.gj_eta[ev_.ngj]  = selectedGenJets.at(i)->Eta;
+            ev_.gj_mass[ev_.ngj] = selectedGenJets.at(i)->Mass;
+            ev_.ngj++;
+        }
+        
 
 
 		t_event_->Fill();
