@@ -278,8 +278,10 @@ void ntupler::analyze(size_t childid /* this info can be used for printouts */){
         ev_.ngj = 0;
         for (size_t i = 0; i < selectedGenJets.size(); i++) {
             if (ev_.ngj>=MiniEvent_t::maxjets) break;
-            if (selectedGenJets.at(i)->PT < 20.) continue;
-            if (fabs(selectedGenJets.at(i)->Eta) > 5) continue;
+            // if (selectedGenJets.at(i)->PT < 20.) continue;
+            // if (fabs(selectedGenJets.at(i)->Eta) > 5) continue;
+            if (selectedGenJets.at(i)->PT < 5.) continue; // 6 apr 2018 : lowered pT cut to 5 GeV
+            if (fabs(selectedGenJets.at(i)->Eta) > 5.5) continue; // 6 apr 2018 : increase acceptance to 5.5
 
             TLorentzVector p4_gj;
             p4_gj.SetPtEtaPhiM(
