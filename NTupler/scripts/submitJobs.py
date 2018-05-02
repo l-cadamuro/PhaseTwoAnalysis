@@ -19,13 +19,20 @@ print
 ####### force to have 1 job / 1 file
 # NumberOfJobs = 182 # number of jobs to be submitted
 # interval     = 1  # number files to be processed in a single job, take care to split your file so that you run on all files. The last job might be with smaller number of files (the ones that remain).
-ScriptName   = "produceNtuples_cfg_jetsOnly.py" # script to be used with cmsRun
+# ScriptName   = "produceNtuples_cfg_jetsOnly.py" # script to be used with cmsRun
+ScriptName   = "clean_produce_Ntuples.py"
 
 # OutputFileNames = "TTbar_PU0_ntuple" # base of the output file name, they will be saved in res directory
 # FileList     = "TTbar_PU0_filelist.txt" # list with all the file directories
 
-OutputFileNames = "GG_HH_4B_PU200_ntuple" # base of the output file name, they will be saved in res directory
-FileList     = "GG_HH_4B_PU200_v2_filelist.txt" # list with all the file directories
+OutputFileNames = "GG_HH_4B_PU200_UpdBTag_ntuple_resub" # base of the output file name, they will be saved in res directory
+FileList        = "filelists/GG_HH_4B_PU200_v2_filelist.txt" # list with all the file directories
+tag             = "GG_HH_4B_PU200_UpdBTag_ntuple_resub"
+odir            = "/eos/cms/store/user/lcadamur/DelphesPhaseIITreesFullSim"
+
+# OutputFileNames = "VBF_HH_4B_PU200_UpdBTag_ntuple" # base of the output file name, they will be saved in res directory
+# FileList     = "filelists/VBF_HH_4B_PU200_comb_filelist.txt" # list with all the file directories
+
 
 # OutputFileNames = "TTbar_PU200_ntuple" # base of the output file name, they will be saved in res directory
 # FileList     = "TTbar_PU200_ext_filelist.txt" # list with all the file directories
@@ -50,10 +57,20 @@ print '... Will execute', NumberOfJobs, "jobs each running on", interval, 'files
 
 path = os.getcwd()
 print
-print 'do not worry about folder creation:'
-os.system("rm -r tmp")
-os.system("mkdir tmp")
-os.system("mkdir res")
+# print 'do not worry about folder creation:'
+# os.system("rm -r tmp")
+# os.system("mkdir tmp")
+# os.system("mkdir res")
+
+full_odir   = "%s/%s" % (odir, tag)
+full_jobdir = "jobs_%s" % (tag)
+
+print "Output dir is : ", full_odir
+print "Job dir is : ", full_jobdir
+
+os.system("mkdir %s" % full_odir)
+os.system("mkdir %s" % full_jobdir)
+
 # xrootx proxy
 proxynamebase = 'x509up_u63159'
 homebase = '/afs/cern.ch/user/l/lcadamur/' ## keep trailing /
@@ -75,8 +92,13 @@ print
 ##### loop for creating and sending jobs #####
 for x in range(1, int(NumberOfJobs)+1):
    ##### creates directory and file list for job #######
-   os.system("mkdir tmp/"+str(x))
-   os.chdir("tmp/"+str(x))
+   # os.system("mkdir tmp/"+str(x))
+   # os.chdir("tmp/"+str(x))
+
+   thisdir = "%s/%i" % (full_jobdir, x) 
+   os.system("mkdir %s" % thisdir)
+   # os.chdir("tmp/"+str(x))
+   os.chdir("%s" % (thisdir))
    os.system("sed '"+str(1+interval*(x-1))+","+str(interval*x)+"!d' ../../"+FileList+" > list.txt ")
    
    ##### creates jobs #######
@@ -92,7 +114,8 @@ for x in range(1, int(NumberOfJobs)+1):
       fout.write("cmsenv\n")
       # fout.write("cmsRun "+ScriptName+" outFilename='res/"+OutputFileNames+"_"+str(x)+".root' inputFiles_clear inputFiles_load='tmp/"+str(x)+"/list.txt'\n")
       # fout.write("cmsRun "+ScriptName+" outFilename='res/"+OutputFileNames+"_"+str(x)+".root' inputFiles_load='tmp/"+str(x)+"/list.txt' %s\n" % jecs_text)
-      fout.write("cmsRun "+ScriptName+" outFilename='res/"+OutputFileNames+"_"+str(x)+".root' inputFiles_load='tmp/"+str(x)+"/list.txt'\n")
+      # fout.write("cmsRun "+ScriptName+" outFilename='res/"+OutputFileNames+"_"+str(x)+".root' inputFiles_load='tmp/"+str(x)+"/list.txt'\n")
+      fout.write("cmsRun "+ScriptName+" outFilename='" + full_odir + "/"+OutputFileNames+"_"+str(x)+".root' inputFiles_load='" + thisdir + "/list.txt'\n")
       fout.write("echo 'STOP---------------'\n")
       fout.write("echo\n")
       fout.write("echo\n")
