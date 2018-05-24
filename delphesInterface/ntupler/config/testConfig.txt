@@ -30,7 +30,7 @@ $ If the testmode is activated, only a fraction of the events will be processed.
 $ This mode is meant to test histogram ranges etc. The scaling does not necessarily
 $ correspond to the relative cross sections of the processes
     
-    Testmode   = true
+    Testmode   = false
 
 $ Maximum number of child processes that are spawned simultaneously, each running on a
 $ different input file.
@@ -40,7 +40,10 @@ $ different input file.
 $ This Samplesdir can be a local directory or refer to off-site locations via xrootd 
     
     Samplesdir = /afs/cern.ch/user/j/jkiesele/eos_upgrade/delphes_output/LHEGEN_SMbackgrounds/Delphes342pre07_hadd/
- 
+
+$/eos/cms/store/group/upgrade/delphes_output/LHEGEN_SMbackgrounds/Delphes342pre07_hadd
+$/eos/cms/store/group/upgrade/delphes_output/Run2MiniAOD_SMbackgrounds/Delphes342pre07_hadd/
+
 $ The analyser will have a postProcess() function. This function should be used to
 $ extract parameters from the filled histograms, do additional calculations, etc.
 $ If only this post process function should be run (the histograms are already created)
@@ -77,8 +80,9 @@ $ Most of these options are not important when converting delphes to Phase2 NTup
 $ e.g. : <insample>, <legendname=outfilename>,  <color: does not matter>, <xsec: does not matter>, <nevents: does not matter>, <legend order: does not matter>,
 
 $ This will process all root files in this directory:
-TOP-PhaseIISummer17wmLHEGENOnly-00027_200PU/  , TGJets,   1, 56, auto, 2 
-
+$TOP-PhaseIISummer17wmLHEGENOnly-00027_200PU/  , TGJets,   1, 56, auto, 2 
+TT_TuneCUETP8M2T4_14TeV-powheg-pythia8_0PU/ , TT, 1, 900, auto, 1
+$TT_TuneCUETP8M2T4_14TeV-powheg-pythia8_200PU/ , TT, 1, 900, auto, 1
 
 $ The last entry is an example for running over all input files in a directory
 
