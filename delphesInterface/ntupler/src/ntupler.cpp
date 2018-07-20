@@ -321,10 +321,8 @@ void ntupler::analyze(size_t childid /* this info can be used for printouts */){
 
 			ev_.j_deepcsv[ev_.nj]=0;
 			ev_.j_mvav2[ev_.nj]=0;
-			if(selectedjets.at(i)->BTag){
-				ev_.j_deepcsv[ev_.nj]=0b00000111;
-				ev_.j_mvav2[ev_.nj]=0b00000111;
-			}
+			ev_.j_deepcsv[ev_.nj] = selectedjets.at(i)->BTag;
+			ev_.j_mvav2[ev_.nj] = selectedjets.at(i)->BTag;
 			ev_.j_sf[ev_.nj]=jetsf.getSF(fabs(selectedjets.at(i)->Eta),selectedjets.at(i)->PT);
 			ev_.nj++;
 		}
