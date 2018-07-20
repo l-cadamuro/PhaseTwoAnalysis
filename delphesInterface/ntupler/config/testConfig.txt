@@ -17,7 +17,7 @@ $
 
 [config-begin]
 
-    Outputdir  = output
+    Outputdir  = outputHinv
     Outputfile = outputfile.root
     
 $ The luminosity is to be given to match the cross section values listed in the section "inputfiles"
@@ -39,7 +39,9 @@ $ different input file.
 
 $ This Samplesdir can be a local directory or refer to off-site locations via xrootd 
     
-    Samplesdir = /afs/cern.ch/user/j/jkiesele/eos_upgrade/delphes_output/LHEGEN_SMbackgrounds/Delphes342pre07_hadd/
+    Samplesdir = /eos/cms/store/group/upgrade/delphes_output/YR_Delphes/Delphes342pre14/
+
+$/afs/cern.ch/user/j/jkiesele/eos_upgrade/delphes_output/LHEGEN_SMbackgrounds/Delphes342pre07_hadd/
 
 $/eos/cms/store/group/upgrade/delphes_output/LHEGEN_SMbackgrounds/Delphes342pre07_hadd
 $/eos/cms/store/group/upgrade/delphes_output/Run2MiniAOD_SMbackgrounds/Delphes342pre07_hadd/
@@ -81,8 +83,10 @@ $ e.g. : <insample>, <legendname=outfilename>,  <color: does not matter>, <xsec:
 
 $ This will process all root files in this directory:
 $TOP-PhaseIISummer17wmLHEGENOnly-00027_200PU/  , TGJets,   1, 56, auto, 2 
-TT_TuneCUETP8M2T4_14TeV-powheg-pythia8_0PU/ , TT, 1, 900, auto, 1
+$TT_TuneCUETP8M2T4_14TeV-powheg-pythia8_0PU/TT_TuneCUETP8M2T4_14TeV-powheg-pythia8_0PU_1.root , TT, 1, 900, auto, 1
 $TT_TuneCUETP8M2T4_14TeV-powheg-pythia8_200PU/ , TT, 1, 900, auto, 1
+
+VBF_HToInvisible_M125_14TeV_powheg_pythia8_200PU/, VBFH, 1, 5, auto, 1
 
 $ The last entry is an example for running over all input files in a directory
 

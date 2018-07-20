@@ -175,7 +175,7 @@ void basicAnalyzer::readConfigFile(const std::string& inputfile){
 
 
 		std::vector<double> normsinfl;
-		if( ! if_sample.EndsWith("/")){ //single file
+		if( ! (if_sample.EndsWith("/") || if_sample.EndsWith(".dat")) ){ //single file
 			sampleDescriptor sampled(
 					if_sample,
 					if_legentry,
@@ -190,75 +190,100 @@ void basicAnalyzer::readConfigFile(const std::string& inputfile){
 			samples_.push_back(sampled);
 		}
 		else{//this is a directory
-
-			bool hasmetadata;
-			std::vector<TString> infiles_indirectory;
-			infiles_indirectory=lsDirectory(if_sample,hasmetadata);
-
-			if(infiles_indirectory.size()<1){
-				throw std::runtime_error("basicAnalyzer::readFileList: no input files found in this directory");
+		  
+		  bool hasmetadata;
+		  std::vector<TString> infiles_indirectory;
+		  
+		  if( if_sample.EndsWith(".dat")){//filelist
+		    //read filelist
+		    std::ifstream linputlist;
+		    linputlist.open(if_sample);
+		    if (!linputlist.is_open()){
+		      std::ostringstream lerror;
+		      lerror << "basicAnalyzer::readFileList: filelist " << if_sample << " could not be opened.";
+		      throw std::runtime_error(lerror.str());
+		    }
+		    else {
+		      while(!linputlist.eof()){
+			
+			TString tmp;
+			linputlist>>tmp;
+			if (tmp.Length()>0) {
+			  infiles_indirectory.push_back(tmp);
+			  std::cout << " Adding file " << tmp << " to the list." << std::endl;
 			}
+			
+		      }
+		    }
+		  }
+		  else { 
+		    infiles_indirectory=lsDirectory(if_sample,hasmetadata);
+		  }
 
-			if(testmode_ && infiles_indirectory.size()){
-				size_t usefiles=infiles_indirectory.size();
-				usefiles=infiles_indirectory.size()/100;
-				if(!usefiles)
-					usefiles=1;
-				infiles_indirectory.erase(infiles_indirectory.begin()+usefiles,infiles_indirectory.end());
-			}
-
-			unsigned long totalentries=0;
-			if(autoentries){
-				std::cout << "basicAnalyser::INFO: the input " << if_sample << " is a directory.\nCreating file list and total number of events in directory\n(might take a while for many files. It is strongly encouraged to \"hadd\" them before!)... \n" <<std::endl; ;
-
-				if(hasmetadata){
-					//try to read from text files
-					hasmetadata=false;
-					//FIXME to be implemented in a next release, read from the text files
-				}
-
-				if(!hasmetadata){
-					totalentries=getTotalEntries(infiles_indirectory);
-				}
-				std::cout << "extracted the total number of entries in directory: "<<totalentries
-						<<"\n(add this to your configuration file instead of \"auto\"!)\n"<< std::endl;
-			}
-			else{//not auto entries
-				totalentries=if_entries;
-			}
-			for(size_t infl=0;infl<infiles_indirectory.size();infl++){
-				TString subsample=infiles_indirectory.at(infl);
-				sampleDescriptor sampled(
-						subsample,
-						if_legentry,
-						if_col,
-						if_xsec,
-						totalentries,
-						if_legndord,
-						if_issignal,
-						if_otheropts
-				);
-				if(debug)
-					std::cout << "basicAnalyzer::readConfigFile: added sample\n"
-					<<sampled.getInfile() <<" "<< sampled.getDirentries()<< std::endl;
-				samples_.push_back(sampled);
-				if(debug)
-					std::cout << "basicAnalyzer::readFileList: " << sampled.getLegend() << std::endl;
-			}
-
+		  if(infiles_indirectory.size()<1){
+		    throw std::runtime_error("basicAnalyzer::readFileList: no input files found in this directory");
+		  }
+		  
+		  if(testmode_ && infiles_indirectory.size()){
+		    size_t usefiles=infiles_indirectory.size();
+		    usefiles=infiles_indirectory.size()/100;
+		    if(!usefiles)
+		      usefiles=1;
+		    infiles_indirectory.erase(infiles_indirectory.begin()+usefiles,infiles_indirectory.end());
+		  }
+		  
+		  unsigned long totalentries=0;
+		  if(autoentries){
+		    std::cout << "basicAnalyser::INFO: the input " << if_sample << " is a directory.\nCreating file list and total number of events in directory\n(might take a while for many files. It is strongly encouraged to \"hadd\" them before!)... \n" <<std::endl; ;
+		    
+		    if(hasmetadata){
+		      //try to read from text files
+		      hasmetadata=false;
+		      //FIXME to be implemented in a next release, read from the text files
+		    }
+		    
+		    if(!hasmetadata){
+		      totalentries=getTotalEntries(infiles_indirectory);
+		    }
+		    std::cout << "extracted the total number of entries in directory: "<<totalentries
+			      <<"\n(add this to your configuration file instead of \"auto\"!)\n"<< std::endl;
+		  }
+		  else{//not auto entries
+		    totalentries=if_entries;
+		  }
+		  for(size_t infl=0;infl<infiles_indirectory.size();infl++){
+		    TString subsample=infiles_indirectory.at(infl);
+		    sampleDescriptor sampled(
+					     subsample,
+					     if_legentry,
+					     if_col,
+					     if_xsec,
+					     totalentries,
+					     if_legndord,
+					     if_issignal,
+					     if_otheropts
+					     );
+		    if(debug)
+		      std::cout << "basicAnalyzer::readConfigFile: added sample\n"
+				<<sampled.getInfile() <<" "<< sampled.getDirentries()<< std::endl;
+		    samples_.push_back(sampled);
+		    if(debug)
+		      std::cout << "basicAnalyzer::readFileList: " << sampled.getLegend() << std::endl;
+		  }
+		  
 		}//directory
-
+		
 	}
 	std::vector<std::string > ffinfiles;
 	for(size_t i=0;i<samples_.size();i++){
-		std::string file=samples_.at(i).getInfile().Data();
-		ffinfiles.push_back(file);
+	  std::string file=samples_.at(i).getInfile().Data();
+	  ffinfiles.push_back(file);
 	}
 	fileForker::setInputFiles(ffinfiles);
 }
 
 
-
+  
 fileForker::fileforker_status basicAnalyzer::runParallels(int interval){
 	prepareSpawn();
 	fileForker::fileforker_status stat=fileForker::ff_status_parent_busy;
