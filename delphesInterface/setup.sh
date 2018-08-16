@@ -2,8 +2,8 @@
 PPOLDDIR=`pwd`
 
 echo $PPOLDDIR
-wget https://github.com/delphes/delphes/archive/3.4.2pre07.tar.gz
-tar xfz 3.4.2pre07.tar.gz
+wget https://github.com/delphes/delphes/archive/3.4.2pre14.tar.gz
+tar xfz 3.4.2pre14.tar.gz
 mv delphes-* delphes
 cd delphes
 pwd

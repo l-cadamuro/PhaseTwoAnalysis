@@ -6,6 +6,8 @@ import commands
 import math
 import random
 
+#python submitProdCondor.py -o /afs/cern.ch/work/a/amagnan/public/UPSGAna/180804/
+
 usage = 'usage: %prog [options]'
 parser = optparse.OptionParser(usage)
 parser.add_option('-q', '--queue'  ,    dest='queue'             , help='batch queue'             , default='2nd')
@@ -18,6 +20,7 @@ parser.add_option('-S', '--no-submit'   ,    action="store_true",  dest='nosubmi
 pulist = ['200PU']
 
 inputlistdir = 'filelists/180716/split/'
+#inputlistdir = 'filelists/test/'
 
 #sampleShort=['ST_tch_top']
 #bkgshort=['ST_s-channel','ST_tW_antitop','ST_tW_top','TT']
@@ -81,8 +84,8 @@ for pu in pulist :
         scriptFile.write('pwd\n')
         scriptFile.write('hadd outputdir/%s.root outputdir/p2ntuple*.root\n'%sample)
         scriptFile.write('if (( "$?" == "0" )); then\n')
-        scriptFile.write('eos mkdir -p /eos/cms/store/user/amagnan/DelphesNtuples/%s/\n'%pu)
-        scriptFile.write('eos cp outputdir/%s.root /eos/cms/store/user/amagnan/DelphesNtuples/%s/%s.root\n'%(sample,pu,sample))
+        scriptFile.write('eos mkdir -p /eos/cms/store/group/phys_higgs/future/amagnan/%s/\n'%pu)
+        scriptFile.write('eos cp outputdir/%s.root /eos/cms/store/group/phys_higgs/future/amagnan/%s/%s.root\n'%(sample,pu,sample))
         scriptFile.write('ls *\n')
         scriptFile.write('cp outputdir/delphesNtuple.root %s/\n'%(outDir))
         scriptFile.write('echo " -- hadd ntuples done."\n')

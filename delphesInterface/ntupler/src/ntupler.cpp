@@ -141,7 +141,6 @@ void ntupler::analyze(size_t childid /* this info can be used for printouts */){
                   selectedMuonsL.push_back(muonloose.at(i));
 		}
 
-
 		std::vector<Jet*>selectedjets;
 		if (hasPU){
 		  for(size_t i=0;i<jetPUPPI.size();i++){
@@ -157,10 +156,10 @@ void ntupler::analyze(size_t childid /* this info can be used for printouts */){
 		}
 		
 		std::vector<Jet*>selectedtaujets;
-		for(size_t i=0;i<jet.size();i++){
-                  if(jet.at(i)->PT<10)continue;
-                  if(jet.at(i)->TauTag!=1) continue;
-                  selectedtaujets.push_back(jet.at(i));
+		for(size_t i=0;i<jetPUPPI.size();i++){
+                  if(jetPUPPI.at(i)->PT<20)continue;
+                  if(jetPUPPI.at(i)->TauWeight<0.1) continue;
+                  selectedtaujets.push_back(jetPUPPI.at(i));
 		}
 
             
@@ -319,10 +318,9 @@ void ntupler::analyze(size_t childid /* this info can be used for printouts */){
 			ev_.j_flav[ev_.nj]=selectedjets.at(i)->Flavor;
 			ev_.j_hadflav[ev_.nj]=selectedjets.at(i)->Flavor;
 
-			ev_.j_deepcsv[ev_.nj]=0;
-			ev_.j_mvav2[ev_.nj]=0;
 			ev_.j_deepcsv[ev_.nj] = selectedjets.at(i)->BTag;
-			ev_.j_mvav2[ev_.nj] = selectedjets.at(i)->BTag;
+			//@FIXME use mvav2 to store tau weight... it's an int so patch with times 10...
+			ev_.j_mvav2[ev_.nj] = selectedjets.at(i)->TauWeight*10;
 			ev_.j_sf[ev_.nj]=jetsf.getSF(fabs(selectedjets.at(i)->Eta),selectedjets.at(i)->PT);
 			ev_.nj++;
 		}
