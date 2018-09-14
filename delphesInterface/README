@@ -7,7 +7,7 @@ This will compile the package. THIS IS ONLY NEEDED ONCE!
 
 After that (having set up the CMS environment 'cmsenv') 
 
-** Note ** modify delphesInterface/DAnalysis-v.1.1_rc2/DAnalysisDict.cxx to give the correct path (change the lines containing amagnan to refer to local paths)
+**Note** modify delphesInterface/DAnalysis-v.1.1_rc2/DAnalysisDict.cxx to give the correct path (change the lines containing amagnan to refer to local paths)
 
 'source env.sh' 
 for usage.
