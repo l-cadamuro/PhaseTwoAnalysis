@@ -1,4 +1,4 @@
-SUFFIX="prodQCD_1_Sep_res_x509fixed_1core_res"
+SUFFIX="prodQCD_17Sep_full"
 
 python submitOnBatch.py --tag QCD_bEnriched_HT200to300_${SUFFIX} --input /afs/cern.ch/work/l/lcadamur/private/YR_bbbb_analysis/CMSSW_9_3_2/src/PhaseTwoAnalysis/delphesInterface/ntupler/config/filelists/filelist_QCD_bEnriched_HT200to300_TuneCUETP8M1_14TeV-madgraphMLM-pythia8_200PU.dat    --location desy
 python submitOnBatch.py --tag QCD_bEnriched_HT300to500_${SUFFIX} --input /afs/cern.ch/work/l/lcadamur/private/YR_bbbb_analysis/CMSSW_9_3_2/src/PhaseTwoAnalysis/delphesInterface/ntupler/config/filelists/filelist_QCD_bEnriched_HT300to500_TuneCUETP8M1_14TeV-madgraphMLM-pythia8_200PU.dat    --location desy

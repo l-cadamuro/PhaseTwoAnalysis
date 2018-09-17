@@ -76,6 +76,8 @@ parser.add_argument('--njobs'    , dest='njobs',    help='number of jobs', type=
 parser.add_argument('--input'    , dest='input',    help='input directory or filelist', required=True)
 parser.add_argument('--output'   , dest='output',   help='output directory', default="/eos/cms/store/user/lcadamur/DelphesPhaseIITrees")
 parser.add_argument('--tag'      , dest='tag',      help='tag name pf this production', required=True)
+parser.add_argument('--directWrite' , dest='directwrite',  help='directly write the output on the destination instead of xrdcp after execution', action='store_true', default=False)
+parser.add_argument('--dry-run' , dest='dryrun',  help='do not submit jobs', action='store_true', default=False)
 args = parser.parse_args()
 
 cfg_template  = 'TEMPLATE_CFG.txt'
@@ -133,7 +135,8 @@ print "... is this an input filelist as .dat file?", input_is_filelist
 if not input_dir[-1] == '/' and not input_is_filelist: input_dir += '/'
 if not output_dir[-1]  == '/': output_dir += '/'
 output_dir += tag
-
+# output_tmp_dir_proto = '/tmp/lcadamur/' + tag + '/dir_{0}' ## for the temporary output of the job. Format the out dir with the job nr so that it does not interfere when copying outputs
+output_tmp_dir_proto = '/pool/lcadamur/' + tag + '/dir_{0}' ## for the temporary output of the job. Format the out dir with the job nr so that it does not interfere when copying outputs
 
 job_folder = 'jobs_' + tag
 if os.path.isdir(job_folder) and not force:
@@ -148,10 +151,11 @@ if os.path.isdir(output_dir) and not force:
 os.system('mkdir %s' % output_dir)
 
 print " ******************************** "
-print " ** Input  : ", input_dir
-print " ** Output : ", output_dir
-print " ** Jobs   : ", job_folder
-print " ** Loc    : ", location
+print " ** Input   : ", input_dir
+print " ** Output  : ", output_dir
+print " ** Jobs    : ", job_folder
+print " ** Loc     : ", location
+if not args. directwrite: print " ** Tmp out : ", output_tmp_dir_proto
 print " ******************************** "
 
 if input_is_filelist:
@@ -206,7 +210,7 @@ for i in range(len(all_files)):
 # }
 
 repl = {
-    'XXX_OUTPUTDIR_XXX'  : output_dir ,
+    'XXX_OUTPUTDIR_XXX'  : (output_dir if args.directwrite else output_tmp_dir_proto),
     'XXX_OUTPUTFILE_XXX' : 'ntuple_{}.root' ,
     'XXX_FILENAME_XXX'   : '{}' ,
     'XXX_FILETAG_XXX'    : tag + '_{}' ,
@@ -230,6 +234,7 @@ for line in template:
         for key, value in repl.items():
             if key in line:
                 ## special cases
+                if   key == 'XXX_OUTPUTDIR_XXX' and not args.directwrite: dispatch_format = f_idxs
                 if   key == 'XXX_OUTPUTFILE_XXX': dispatch_format = f_idxs
                 elif key == 'XXX_FILENAME_XXX'  : dispatch_format = zip(all_files, f_idxs) ### two values must be passed to "format" and FILENAME and FILETAG are on the same line
                 line = line.replace(key, value)
@@ -312,12 +317,32 @@ for i in range(len(all_files)):
         # fjob.write('echo "var is $DANALYSISPATH"\n')
         fjob.write("pwd\n")
         # fjob.write("ls\n")
+        ### /tmp area is per maching. So let each job create and handle its own are
+        if not args.directwrite:
+            output_tmp_dir = output_tmp_dir_proto.format(i)
+            fjob.write('echo ">> creating the tmp folder in %s"\n' % output_tmp_dir)
+            fjob.write('mkdir -p %s\n' % output_tmp_dir)
+            fjob.write('echo ">> tmp folder created"\n')
+            ### some checks for debug
+            fjob.write('echo ">> touching file"\n')
+            fjob.write('touch %s/test_%i\n' % (output_tmp_dir, i))
+            fjob.write('echo ">> listing file"\n')
+            fjob.write('ls %s\n' % output_tmp_dir)
         fjob.write('echo "launching the delphes command ..."\n')
         # fjob.write("cmsRun "+ScriptName+" outFilename='res/"+OutputFileNames+"_"+str(x)+".root' inputFiles_clear inputFiles_load='tmp/"+str(x)+"/list.txt'\n")
         # fjob.write("cmsRun "+ScriptName+" outFilename='res/"+OutputFileNames+"_"+str(x)+".root' inputFiles_load='tmp/"+str(x)+"/list.txt' %s\n" % jecs_text)
         # fjob.write("cmsRun "+ScriptName+" outFilename='res/"+OutputFileNames+"_"+str(x)+".root' inputFiles_load='tmp/"+str(x)+"/list.txt'\n")
         fjob.write('./ntupler batch/%s/%s\n' % (job_folder, cfgname_proto.format(i)))
         fjob.write('echo "... job ended with status $?"\n')
+        if not args.directwrite: ## also add xrdcp directives
+            xrd_output_dir = output_dir
+            if '/eos/cms' in xrd_output_dir:
+                xrd_output_dir = xrd_output_dir.replace('/eos/cms', 'root://eoscms.cern.ch/')
+            fjob.write('xrdcp -s %s/p2ntuple_*.root %s\n' % (output_tmp_dir, xrd_output_dir))
+            fjob.write('echo "... xrdcp copy ended with status $?"\n')
+            fjob.write('echo "... cleaning up the tmp space"\n')
+            fjob.write('rm -r %s\n' % output_tmp_dir)
+            fjob.write('echo "... deletion done with status $?"\n')
         fjob.write("echo 'STOP---------------'\n")
         fjob.write('echo "... end job at" `date "+%Y-%m-%d %H:%M:%S"`\n')
         fjob.write("echo\n")
@@ -325,7 +350,8 @@ for i in range(len(all_files)):
     os.system("chmod 755 %s" % jname)
 
 ###### sends bjobs ######
-for i in range(len(all_files)):
-    os.system("bsub -q "+queue+" -o %s -e %s %s" % (log_proto.format(i), err_proto.format(i), jname_proto.format(i)))
-    print "job nr " + str(i) + " submitted"
+if not args.dryrun:
+    for i in range(len(all_files)):
+        os.system("bsub -q "+queue+" -o %s -e %s %s" % (log_proto.format(i), err_proto.format(i), jname_proto.format(i)))
+        print "job nr " + str(i) + " submitted"
 

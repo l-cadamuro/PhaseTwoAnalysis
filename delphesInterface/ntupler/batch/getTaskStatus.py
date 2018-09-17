@@ -15,15 +15,15 @@ def getLog (proto, ID, silenceWarning=False):
         if not silenceWarning: print ">>> Too many logs found for job", ID, ' (resubmitted?) , returning last'
     return logs[-1]
 
-def getExitCode(fname):
+def getExitCode(fname, text='job ended with status'):
     f = open(fname)
     code = -888
     for line in f:
         # if not '... cmsRun finished with status' in line:
-        if not '... job ended with status' in line:
+        if not '... %s' % text in line:
             continue
         # code = int(re.search('... cmsRun finished with status (\d+)', line).group(1))
-        code = int(re.search('... job ended with status (\d+)', line).group(1))
+        code = int(re.search('... %s (\d+)' % text, line).group(1))
     return code
 
 ##############################
@@ -64,13 +64,19 @@ logs_txt = {ID: getLog(log_proto, ID) for ID in jobs_ID if getLog(log_proto, ID,
 #############################
 
 exitCodes = []
+copyCodes   = [] ## extra ops done by the tasks
+deleteCodes = [] ## extra ops done by the tasks
 ## code -999 means no log yet (unfinished?)
 ## code -888 means no CMSSW string found (unfinished? / crash?)
 for ID in jobs_ID:
     if not ID in logs_txt:
         exitCodes.append(-999)
+        copyCodes.append(-999)
+        deleteCodes.append(-999)
     else:
-        exitCodes.append(getExitCode(logs_txt[ID]))
+        exitCodes.append(getExitCode(logs_txt[ID], text = 'job ended with status'))
+        copyCodes.append(getExitCode(logs_txt[ID], text = 'xrdcp copy ended with status'))
+        deleteCodes.append(getExitCode(logs_txt[ID], text = 'deletion done with status'))
 
 ###########################
 missing    = []
@@ -80,10 +86,13 @@ success    = []
 
 for idx, ID in enumerate(jobs_ID):
     code = exitCodes[idx]
+    cpcode = copyCodes [idx]
+    delcode = deleteCodes [idx]
     if   code == -999: missing.append((ID, code))
     elif code == -888: unfinished.append((ID, code))
     # elif code == 0:    success.append((ID, code))
-    elif code == 1:    success.append((ID, code)) ## #for the danalysis succes == 1.. mah
+    # elif code == 1:    success.append((ID, code)) ## #for the danalysis succes == 1.. mah
+    elif code == 1 and cpcode == 0 and delcode == 0:    success.append((ID, code)) ## add the successful cp and rm ops
     else:              failed.append((ID, code))
 
 # print exitCodes
